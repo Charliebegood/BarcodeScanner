@@ -55,7 +55,7 @@ public final class CameraViewController: UIViewController {
   private let permissionService = VideoPermissionService()
 
   /// The current torch mode on the capture device.
-  private var torchMode: TorchMode = .off {
+  public var torchMode: TorchMode = .off {
     didSet {
       guard let captureDevice = captureDevice, captureDevice.hasFlash else { return }
       guard captureDevice.isTorchModeSupported(torchMode.captureTorchMode) else { return }
@@ -66,7 +66,7 @@ public final class CameraViewController: UIViewController {
         captureDevice.unlockForConfiguration()
       } catch {}
 
-      flashButton.setImage(torchMode.image, for: UIControlState())
+//      flashButton.setImage(torchMode.image, for: UIControlState())
     }
   }
 
@@ -98,19 +98,21 @@ public final class CameraViewController: UIViewController {
     }
 
     view.layer.addSublayer(videoPreviewLayer)
-    view.addSubviews(settingsButton, flashButton, focusView, cameraButton)
+//    view.addSubviews(settingsButton, flashButton, focusView, cameraButton)
+    view.addSubviews(settingsButton, focusView)
 
     torchMode = .off
     focusView.isHidden = true
     setupCamera()
-    setupConstraints()
+//    setupConstraints()
+    setupFocusViewConstraints()
     setupActions()
   }
 
   public override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
-    setupVideoPreviewLayerOrientation()
-    animateFocusView()
+//    setupVideoPreviewLayerOrientation()
+//    animateFocusView()
   }
 
   public override func viewWillTransition(to size: CGSize,
@@ -125,6 +127,11 @@ public final class CameraViewController: UIViewController {
       }))
   }
 
+  func forceLoading() {
+    setupVideoPreviewLayerOrientation()
+    animateFocusView()
+    startCapturing()
+  }
   // MARK: - Video capturing
 
   func startCapturing() {

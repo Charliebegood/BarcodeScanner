@@ -81,6 +81,7 @@ open class BarcodeScannerViewController: UIViewController {
     return messageViewController.view
   }
 
+  private var previousCode: String = ""
   /// The current controller's status mode.
   private var status: Status = Status(state: .scanning) {
     didSet {
@@ -101,8 +102,10 @@ open class BarcodeScannerViewController: UIViewController {
     cameraViewController.metadata = metadata
     cameraViewController.delegate = self
     add(childViewController: cameraViewController)
-
     view.bringSubview(toFront: messageView)
+    setupCameraConstraints()
+    isVisible = true
+    cameraViewController.forceLoading()
   }
 
   open override func viewWillAppear(_ animated: Bool) {
@@ -157,8 +160,8 @@ open class BarcodeScannerViewController: UIViewController {
       expandedConstraints.deactivate()
       collapsedConstraints.activate()
     } else {
-      collapsedConstraints.deactivate()
-      expandedConstraints.activate()
+//      collapsedConstraints.deactivate()
+//      expandedConstraints.activate()
     }
 
     messageViewController.status = newValue
@@ -212,9 +215,9 @@ open class BarcodeScannerViewController: UIViewController {
       completion: ({ [weak self] _ in
         flashView.removeFromSuperview()
 
-        if whenProcessing {
-          self?.status = Status(state: .processing)
-        }
+//        if whenProcessing {
+//          self?.status = Status(state: .processing)
+//        }
       }))
   }
 }
@@ -236,25 +239,26 @@ private extension BarcodeScannerViewController {
       cameraView.bottomAnchor.constraint(
         equalTo: view.bottomAnchor,
         constant: -BarcodeScannerViewController.footerHeight
-      )
+      ),
+      cameraView.topAnchor.constraint(equalTo: view.topAnchor)
     )
-
-    if navigationController != nil {
-      cameraView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-    } else {
-      headerViewController.delegate = self
-      add(childViewController: headerViewController)
-
-      let headerView = headerViewController.view!
-
-      NSLayoutConstraint.activate(
-        headerView.topAnchor.constraint(equalTo: view.topAnchor),
-        headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-        headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        headerView.bottomAnchor.constraint(equalTo: headerViewController.navigationBar.bottomAnchor),
-        cameraView.topAnchor.constraint(equalTo: headerView.bottomAnchor)
-      )
-    }
+//
+//    if navigationController != nil {
+//      cameraView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+//    } else {
+//      headerViewController.delegate = self
+//      add(childViewController: headerViewController)
+//
+//      let headerView = headerViewController.view!
+//
+//      NSLayoutConstraint.activate(
+//        headerView.topAnchor.constraint(equalTo: view.topAnchor),
+//        headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//        headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//        headerView.bottomAnchor.constraint(equalTo: headerViewController.navigationBar.bottomAnchor),
+//        cameraView.topAnchor.constraint(equalTo: headerView.bottomAnchor)
+//      )
+//    }
   }
 
   private func makeExpandedConstraints() -> [NSLayoutConstraint] {
@@ -320,9 +324,9 @@ extension BarcodeScannerViewController: CameraViewControllerDelegate {
       metadata.contains(metadataObj.type)
       else { return }
 
-    if isOneTimeSearch {
-      locked = true
-    }
+//    if isOneTimeSearch {
+//      locked = true
+//    }
 
     var rawType = metadataObj.type.rawValue
 
@@ -332,7 +336,10 @@ extension BarcodeScannerViewController: CameraViewControllerDelegate {
       code = String(code.dropFirst())
       rawType = AVMetadataObject.ObjectType.upca.rawValue
     }
-
+    if (code == self.previousCode) {
+        return
+    }
+    self.previousCode = code
     codeDelegate?.scanner(self, didCaptureCode: code, type: rawType)
     animateFlash(whenProcessing: isOneTimeSearch)
   }
