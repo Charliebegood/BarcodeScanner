@@ -289,6 +289,7 @@ public final class CameraViewController: UIViewController {
     view.layoutIfNeeded()
 
     guard barCodeFocusViewType == .animated else {
+        print("Returning")
       return
     }
 
