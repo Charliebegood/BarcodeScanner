@@ -336,11 +336,11 @@ extension BarcodeScannerViewController: CameraViewControllerDelegate {
       code = String(code.dropFirst())
       rawType = AVMetadataObject.ObjectType.upca.rawValue
     }
-    if (code == self.previousCode) {
-        return
+
+    codeDelegate?.scanner(self, didCaptureCode: code, type: rawType)
+    if (code != self.previousCode) {
+      animateFlash(whenProcessing: isOneTimeSearch)
     }
     self.previousCode = code
-    codeDelegate?.scanner(self, didCaptureCode: code, type: rawType)
-    animateFlash(whenProcessing: isOneTimeSearch)
   }
 }
